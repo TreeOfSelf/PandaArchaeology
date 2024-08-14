@@ -47,9 +47,9 @@ public abstract class FishCatchMixin {
             String formattedDate = dateTime.format(formatter);
 
             if (!ownerName.isBlank() && !ownerName.isEmpty()) {
-                this.getPlayerOwner().sendMessage(Text.of("You found something dropped by " + ownerName + " on "+formattedDate+"."));
+                this.getPlayerOwner().sendMessage(Text.of("You found "+itemData.item.getName().getString()+" dropped by " + ownerName + " on "+formattedDate+"."));
             } else {
-                this.getPlayerOwner().sendMessage(Text.of("You found something dropped on "+formattedDate+"."));
+                this.getPlayerOwner().sendMessage(Text.of("You found "+itemData.item.getName().getString()+" dropped on "+formattedDate+"."));
             }
 
             return itemData.item;
