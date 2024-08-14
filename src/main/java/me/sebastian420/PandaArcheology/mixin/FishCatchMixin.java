@@ -34,8 +34,9 @@ public abstract class FishCatchMixin {
 
     @ModifyVariable(method = "use", at = @At(value = "STORE"), ordinal = 1)
     private ItemStack injected(ItemStack value, @Local LootContextParameterSet lootContextParameterSet) {
+
         if (PandaArcheology.despawnedItemManager.itemLength() <= 0
-                || this.getPlayerOwner().getWorld().random.nextInt(50) - this.luckBonus * 10  > 0 || !this.inOpenWater)  {
+                || this.getPlayerOwner().getWorld().random.nextInt(50) - (this.luckBonus + getPlayerOwner().getLuck()) * 10  > 0 || !this.inOpenWater)  {
             return value;
         } else {
             DespawnedItemManager.itemData itemData = PandaArcheology.despawnedItemManager.getItem(this.getPlayerOwner().getWorld().random);
