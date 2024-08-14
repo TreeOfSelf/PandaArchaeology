@@ -31,7 +31,7 @@ public class BrushBlockMixin {
             DespawnedItemManager.itemData itemData = PandaArcheology.despawnedItemManager.getItem(player.getWorld().random);
             String ownerName = itemData.owner;
 
-            LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(itemData.time), ZoneId.systemDefault());
+            LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(itemData.time), ZoneId.systemDefault());
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
             String formattedDate = dateTime.format(formatter);
 

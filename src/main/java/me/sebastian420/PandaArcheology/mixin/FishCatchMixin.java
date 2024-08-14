@@ -36,13 +36,13 @@ public abstract class FishCatchMixin {
     private ItemStack injected(ItemStack value, @Local LootContextParameterSet lootContextParameterSet) {
 
         if (PandaArcheology.despawnedItemManager.itemLength() <= 0
-                || this.getPlayerOwner().getWorld().random.nextInt(50) - (this.luckBonus + getPlayerOwner().getLuck()) * 10  > 0 || !this.inOpenWater)  {
+                || this.getPlayerOwner().getWorld().random.nextInt(60) - (this.luckBonus + getPlayerOwner().getLuck()) * 10  > 0 || !this.inOpenWater)  {
             return value;
         } else {
             DespawnedItemManager.itemData itemData = PandaArcheology.despawnedItemManager.getItem(this.getPlayerOwner().getWorld().random);
             String ownerName = itemData.owner;
 
-            LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(itemData.time), ZoneId.systemDefault());
+            LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(itemData.time), ZoneId.systemDefault());
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
             String formattedDate = dateTime.format(formatter);
 
