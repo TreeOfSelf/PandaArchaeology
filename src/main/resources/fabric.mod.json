@@ -1,18 +1,18 @@
 {
 	"schemaVersion": 1,
-	"id": "pandaarcheology",
+	"id": "panda-archeology",
 	"version": "${version}",
 	"name": "PandaArcheology",
 	"description": "This is an example description! Tell everyone what your mod is about!",
 	"authors": [
-		"Me!"
+		"TreeOfSelf"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "",
+		"sources": ""
 	},
 	"license": "CC0-1.0",
-	"icon": "assets/pandaarcheology/icon.png",
+	"icon": "assets/panda-archeology/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
@@ -20,7 +20,7 @@
 		]
 	},
 	"mixins": [
-		"pandaarcheology.mixins.json"
+		"panda-archeology.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=0.15.11",

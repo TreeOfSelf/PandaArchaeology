@@ -3,7 +3,6 @@ package me.sebastian420.PandaArcheology;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
 import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.util.Pair;
 import net.minecraft.util.math.random.Random;
 
 import java.io.IOException;
@@ -15,6 +14,8 @@ import java.util.Optional;
 public class DespawnedItemManager {
     private final List<ItemStack> despawnedItems = new ArrayList<>();
     private final List<String> despawnedItemsOwners = new ArrayList<>();
+    private final List<Long> despawnedItemsTimes = new ArrayList<>();
+
 
     private final Path dataFile;
     private final DynamicRegistryManager registryManager;
@@ -34,12 +35,13 @@ public class DespawnedItemManager {
         if (occurences < 10) {
             despawnedItems.add(item);
             despawnedItemsOwners.add(string);
+            despawnedItemsTimes.add(System.currentTimeMillis());
         }
     }
 
-    public Pair<ItemStack, String> getItem(Random random) {
+    public itemData getItem(Random random) {
         int index = random.nextInt(despawnedItems.size());
-        return new Pair<>(despawnedItems.remove(index), despawnedItemsOwners.remove(index));
+        return new itemData(despawnedItems.remove(index), despawnedItemsOwners.remove(index), despawnedItemsTimes.remove(index));
     }
 
     public int itemLength() {
@@ -51,13 +53,20 @@ public class DespawnedItemManager {
         NbtCompound compound = new NbtCompound();
         NbtList nbtList = new NbtList();
         NbtList nbtListOwners = new NbtList();
+        NbtList nbtListTimes = new NbtList();
+
         for (int x = 0; x<despawnedItems.size(); x++) {
             nbtList.add(despawnedItems.get(x).encode(registryManager));
             nbtListOwners.add(NbtString.of(despawnedItemsOwners.get(x)));
+
+            long[] tempArray = new long[1];
+            tempArray[0] = despawnedItemsTimes.get(x);
+            nbtListTimes.add(new NbtLongArray(tempArray));
         }
 
         compound.put("DespawnedItems", nbtList);
         compound.put("DespawnedOwners", nbtListOwners);
+        compound.put("DespawnedTimes", nbtListTimes);
 
         try {
             NbtIo.writeCompressed(compound, dataFile.toFile().toPath());
@@ -75,15 +84,32 @@ public class DespawnedItemManager {
             NbtCompound compound = NbtIo.readCompressed(dataFile.toFile().toPath(), NbtSizeTracker.ofUnlimitedBytes());
             NbtList nbtList = compound.getList("DespawnedItems", NbtElement.COMPOUND_TYPE);
             NbtList nbtListOwners = compound.getList("DespawnedOwners", NbtElement.STRING_TYPE);
+            NbtList nbtListTimes = compound.getList("DespawnedTimes", NbtElement.LONG_ARRAY_TYPE);
+
 
             for (int i = 0; i < nbtList.size(); i++) {
                 NbtCompound itemCompound = nbtList.getCompound(i);
                 Optional<ItemStack> item = ItemStack.fromNbt(registryManager,itemCompound);
                 despawnedItems.add(item.get());
                 despawnedItemsOwners.add(nbtListOwners.get(i).asString());
+                despawnedItemsTimes.add(nbtListTimes.getLongArray(i)[0]);
+
             }
+
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static class itemData {
+        public ItemStack item;
+        public String owner;
+        public long time;
+
+        itemData(ItemStack item, String owner, long time) {
+            this.item = item;
+            this.owner = owner;
+            this.time = time;
         }
     }
 }

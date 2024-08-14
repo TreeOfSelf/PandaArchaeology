@@ -1,6 +1,7 @@
 package me.sebastian420.PandaArcheology.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import me.sebastian420.PandaArcheology.DespawnedItemManager;
 import me.sebastian420.PandaArcheology.PandaArcheology;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -15,6 +16,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 @Mixin(FishingBobberEntity.class)
 public abstract class FishCatchMixin {
@@ -32,11 +38,20 @@ public abstract class FishCatchMixin {
                 || this.getPlayerOwner().getWorld().random.nextInt(50) - this.luckBonus * 10  > 0 || !this.inOpenWater)  {
             return value;
         } else {
-            Pair<ItemStack, String> itemData = PandaArcheology.despawnedItemManager.getItem(this.getPlayerOwner().getWorld().random);
-            String ownerName = itemData.getRight();
-            if (!ownerName.isBlank() && !ownerName.isEmpty())
-                this.getPlayerOwner().sendMessage(Text.of("You found something dropped by "+ownerName+"."));
-            return itemData.getLeft();
+            DespawnedItemManager.itemData itemData = PandaArcheology.despawnedItemManager.getItem(this.getPlayerOwner().getWorld().random);
+            String ownerName = itemData.owner;
+
+            LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(itemData.time), ZoneId.systemDefault());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+            String formattedDate = dateTime.format(formatter);
+
+            if (!ownerName.isBlank() && !ownerName.isEmpty()) {
+                this.getPlayerOwner().sendMessage(Text.of("You found something dropped by " + ownerName + " on "+formattedDate+"."));
+            } else {
+                this.getPlayerOwner().sendMessage(Text.of("You found something dropped on "+formattedDate+"."));
+            }
+
+            return itemData.item;
         }
     }
 }
