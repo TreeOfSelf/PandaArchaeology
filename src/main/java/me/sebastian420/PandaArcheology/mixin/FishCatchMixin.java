@@ -24,10 +24,12 @@ public abstract class FishCatchMixin {
 
     @Shadow @Final private int luckBonus;
 
+    @Shadow private boolean inOpenWater;
+
     @ModifyVariable(method = "use", at = @At(value = "STORE"), ordinal = 1)
     private ItemStack injected(ItemStack value, @Local LootContextParameterSet lootContextParameterSet) {
         if (PandaArcheology.despawnedItemManager.itemLength() <= 0
-                || this.getPlayerOwner().getWorld().random.nextInt(50) - this.luckBonus * 10  > 0)  {
+                || this.getPlayerOwner().getWorld().random.nextInt(50) - this.luckBonus * 10  > 0 || !this.inOpenWater)  {
             return value;
         } else {
             Pair<ItemStack, String> itemData = PandaArcheology.despawnedItemManager.getItem(this.getPlayerOwner().getWorld().random);
