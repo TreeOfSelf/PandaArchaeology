@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "me.sebastian420.PandaArcheology.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "BrushBlockMixin",
+    "FishCatchMixin",
+    "ItemEntityDespawn"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+	}
+}
