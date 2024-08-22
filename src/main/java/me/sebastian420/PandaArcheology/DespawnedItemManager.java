@@ -56,12 +56,14 @@ public class DespawnedItemManager {
         NbtList nbtListTimes = new NbtList();
 
         for (int x = 0; x<despawnedItems.size(); x++) {
-            nbtList.add(despawnedItems.get(x).encode(registryManager));
-            nbtListOwners.add(NbtString.of(despawnedItemsOwners.get(x)));
+            try {
+                nbtList.add(despawnedItems.get(x).encode(registryManager));
+                nbtListOwners.add(NbtString.of(despawnedItemsOwners.get(x)));
 
-            long[] tempArray = new long[1];
-            tempArray[0] = despawnedItemsTimes.get(x);
-            nbtListTimes.add(new NbtLongArray(tempArray));
+                long[] tempArray = new long[1];
+                tempArray[0] = despawnedItemsTimes.get(x);
+                nbtListTimes.add(new NbtLongArray(tempArray));
+            } catch(Exception ignored){}
         }
 
         compound.put("DespawnedItems", nbtList);
