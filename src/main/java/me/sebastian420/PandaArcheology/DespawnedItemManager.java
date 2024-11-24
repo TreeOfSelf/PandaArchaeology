@@ -57,7 +57,7 @@ public class DespawnedItemManager {
 
         for (int x = 0; x<despawnedItems.size(); x++) {
             try {
-                nbtList.add(despawnedItems.get(x).encode(registryManager));
+                nbtList.add(despawnedItems.get(x).toNbt(registryManager));
                 nbtListOwners.add(NbtString.of(despawnedItemsOwners.get(x)));
 
                 long[] tempArray = new long[1];

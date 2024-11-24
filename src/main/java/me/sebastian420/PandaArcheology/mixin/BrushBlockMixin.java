@@ -35,9 +35,9 @@ public class BrushBlockMixin {
             String formattedDate = dateTime.format(formatter);
 
             if (!ownerName.isBlank() && !ownerName.isEmpty()) {
-                player.sendMessage(Text.of("You found "+itemData.item.getName().getString()+" dropped by " + ownerName + " on "+formattedDate+"."));
+                player.sendMessage(Text.of("You found "+itemData.item.getName().getString()+" dropped by " + ownerName + " on "+formattedDate+"."),false);
             } else {
-                player.sendMessage(Text.of("You found "+itemData.item.getName().getString()+" dropped on "+formattedDate+"."));
+                player.sendMessage(Text.of("You found "+itemData.item.getName().getString()+" dropped on "+formattedDate+"."),false);
             }
 
             this.item = itemData.item;

@@ -7,7 +7,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FishingBobberEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.loot.context.LootContextParameterSet;
 import net.minecraft.text.Text;
 import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
@@ -33,7 +32,7 @@ public abstract class FishCatchMixin {
     @Shadow private boolean inOpenWater;
 
     @ModifyVariable(method = "use", at = @At(value = "STORE"), ordinal = 1)
-    private ItemStack injected(ItemStack value, @Local LootContextParameterSet lootContextParameterSet) {
+    private ItemStack injected(ItemStack value) {
 
         if (PandaArcheology.despawnedItemManager.itemLength() <= 0
                 || this.getPlayerOwner().getWorld().random.nextInt(60) - (this.luckBonus + getPlayerOwner().getLuck()) * 10  > 0 || !this.inOpenWater)  {
@@ -47,9 +46,9 @@ public abstract class FishCatchMixin {
             String formattedDate = dateTime.format(formatter);
 
             if (!ownerName.isBlank() && !ownerName.isEmpty()) {
-                this.getPlayerOwner().sendMessage(Text.of("You found "+itemData.item.getName().getString()+" dropped by " + ownerName + " on "+formattedDate+"."));
+                this.getPlayerOwner().sendMessage(Text.of("You found "+itemData.item.getName().getString()+" dropped by " + ownerName + " on "+formattedDate+"."),false);
             } else {
-                this.getPlayerOwner().sendMessage(Text.of("You found "+itemData.item.getName().getString()+" dropped on "+formattedDate+"."));
+                this.getPlayerOwner().sendMessage(Text.of("You found "+itemData.item.getName().getString()+" dropped on "+formattedDate+"."),false);
             }
 
             return itemData.item;
