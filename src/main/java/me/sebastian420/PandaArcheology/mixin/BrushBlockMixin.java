@@ -22,7 +22,7 @@ public class BrushBlockMixin {
 
     @Shadow private ItemStack item;
 
-    @Inject(at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/block/entity/BrushableBlockEntity;generateItem(Lnet/minecraft/entity/player/PlayerEntity;)V"), method = "spawnItem")
+    @Inject(at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/block/entity/BrushableBlockEntity;generateItem(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/item/ItemStack;)V"), method = "spawnItem")
     private void spawnItem(PlayerEntity player, CallbackInfo ci) {
         if (PandaArcheology.despawnedItemManager.itemLength() > 0
                 && player.getWorld().random.nextInt(10) - player.getLuck() <= 0) {
