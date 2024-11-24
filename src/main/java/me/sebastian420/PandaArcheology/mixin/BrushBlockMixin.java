@@ -5,6 +5,7 @@ import me.sebastian420.PandaArcheology.PandaArcheology;
 import net.minecraft.block.entity.BrushableBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -23,7 +24,7 @@ public class BrushBlockMixin {
     @Shadow private ItemStack item;
 
     @Inject(at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/block/entity/BrushableBlockEntity;generateItem(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/item/ItemStack;)V"), method = "spawnItem")
-    private void spawnItem(PlayerEntity player, CallbackInfo ci) {
+    private void spawnItem(ServerWorld world, PlayerEntity player, ItemStack brush, CallbackInfo ci) {
         if (PandaArcheology.despawnedItemManager.itemLength() > 0
                 && player.getWorld().random.nextInt(10) - player.getLuck() <= 0) {
 
