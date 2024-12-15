@@ -22,9 +22,9 @@ public abstract class ItemEntityDespawn {
 		String nameString = "";
 		if (this.getOwner() != null) {
 			nameString = this.getOwner().getName().getString();
+			PandaArcheology.despawnedItemManager.addItem(this.getStack(), nameString);
 		}
 
-		PandaArcheology.despawnedItemManager.addItem(this.getStack(), nameString);
 	}
 
 
