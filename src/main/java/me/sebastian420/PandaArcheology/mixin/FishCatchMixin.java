@@ -1,6 +1,5 @@
 package me.sebastian420.PandaArcheology.mixin;
 
-import com.llamalad7.mixinextras.sugar.Local;
 import me.sebastian420.PandaArcheology.DespawnedItemManager;
 import me.sebastian420.PandaArcheology.PandaArcheology;
 import net.minecraft.entity.Entity;
@@ -8,7 +7,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FishingBobberEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
-import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
