@@ -32,7 +32,7 @@ public class DespawnedItemManager {
             if (despawnedItem.getItem() == item.getItem()) occurences++;
         }
 
-        if (occurences < 10) {
+        if (occurences < PandaArcheology.itemLimit || PandaArcheology.itemLimit == 0) {
             despawnedItems.add(item);
             despawnedItemsOwners.add(string);
             despawnedItemsTimes.add(System.currentTimeMillis());

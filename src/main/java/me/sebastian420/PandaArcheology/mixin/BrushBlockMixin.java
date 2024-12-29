@@ -25,8 +25,9 @@ public class BrushBlockMixin {
 
     @Inject(at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/block/entity/BrushableBlockEntity;markDirty()V"), method = "generateItem")
     private void generateItem(ServerWorld world, PlayerEntity player, ItemStack brush, CallbackInfo ci) {
-        if (PandaArcheology.despawnedItemManager.itemLength() > 0
-                && player.getWorld().random.nextInt(10) - player.getLuck() <= 0) {
+        if (    PandaArcheology.activeForBrushing &&
+                PandaArcheology.despawnedItemManager.itemLength() > 0 &&
+                player.getWorld().random.nextInt(PandaArcheology.brushChance) - player.getLuck() <= 0) {
 
             DespawnedItemManager.itemData itemData = PandaArcheology.despawnedItemManager.getItem(player.getWorld().random);
             String ownerName = itemData.owner;
