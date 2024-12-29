@@ -4,7 +4,7 @@
 
 ## Description
 
-A fun mod to spice up a server. Fish up or brush up despawned loot! When loot despawns, it is added to a pool of items. Only 10 of each item type can exist in this pool. When doing archeology or fishing, there is a chance to find this despawned loot. It will display the date it was dropped and by who it was dropped if it was dropped by a player.
+A fun mod to spice up a server. Fish up or brush up despawned loot! When loot despawns, it is added to a pool of items. Only 10 of each item type (configurable) can exist in this pool. When doing archeology or fishing, there is a chance (configurable) to find this despawned loot. It will display the date it was dropped and by who it was dropped if it was dropped by a player.
 
 ## Configuring
 
