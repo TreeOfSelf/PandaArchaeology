@@ -18,9 +18,11 @@ public abstract class ItemEntityDespawn {
 
 	@Inject(at = @At(value = "INVOKE",target = "Lnet/minecraft/entity/ItemEntity;discard()V", ordinal = 1), method = "tick")
 	private void despawned(CallbackInfo info) {
-		String nameString = this.getOwner().getName().getString();
-		if ( (!nameString.isEmpty() && !nameString.isBlank()) || !PandaArcheology.onlyPlayerOwned )
+		if (this.getOwner() != null || !PandaArcheology.onlyPlayerOwned) {
+			String nameString = "";
+			if (this.getOwner() != null) nameString = this.getOwner().getName().getString();
 			PandaArcheology.despawnedItemManager.addItem(this.getStack(), nameString);
+		}
 	}
 
 
