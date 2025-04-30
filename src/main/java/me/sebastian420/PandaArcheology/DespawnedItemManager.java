@@ -84,17 +84,17 @@ public class DespawnedItemManager {
 
         try {
             NbtCompound compound = NbtIo.readCompressed(dataFile.toFile().toPath(), NbtSizeTracker.ofUnlimitedBytes());
-            NbtList nbtList = compound.getList("DespawnedItems", NbtElement.COMPOUND_TYPE);
-            NbtList nbtListOwners = compound.getList("DespawnedOwners", NbtElement.STRING_TYPE);
-            NbtList nbtListTimes = compound.getList("DespawnedTimes", NbtElement.LONG_ARRAY_TYPE);
+            Optional<NbtList> nbtList = compound.getList("DespawnedItems");
+            Optional<NbtList> nbtListOwners = compound.getList("DespawnedOwners");
+            Optional<NbtList> nbtListTimes = compound.getList("DespawnedTimes");
 
 
-            for (int i = 0; i < nbtList.size(); i++) {
-                NbtCompound itemCompound = nbtList.getCompound(i);
-                Optional<ItemStack> item = ItemStack.fromNbt(registryManager,itemCompound);
+            for (int i = 0; i < nbtList.get().size(); i++) {
+                Optional<NbtCompound> itemCompound = nbtList.get().getCompound(i);
+                Optional<ItemStack> item = ItemStack.fromNbt(registryManager,itemCompound.get());
                 despawnedItems.add(item.get());
-                despawnedItemsOwners.add(nbtListOwners.get(i).asString());
-                despawnedItemsTimes.add(nbtListTimes.getLongArray(i)[0]);
+                despawnedItemsOwners.add(nbtListOwners.get().get(i).asString().get());
+                despawnedItemsTimes.add(nbtListTimes.get().getLongArray(i).get()[0]);
 
             }
 
