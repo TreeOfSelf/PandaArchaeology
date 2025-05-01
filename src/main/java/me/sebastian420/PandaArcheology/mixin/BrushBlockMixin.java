@@ -3,8 +3,10 @@ package me.sebastian420.PandaArcheology.mixin;
 import me.sebastian420.PandaArcheology.DespawnedItemManager;
 import me.sebastian420.PandaArcheology.PandaArcheology;
 import net.minecraft.block.entity.BrushableBlockEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,25 +26,29 @@ public class BrushBlockMixin {
     @Shadow private ItemStack item;
 
     @Inject(at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/block/entity/BrushableBlockEntity;markDirty()V"), method = "generateItem")
-    private void generateItem(ServerWorld world, PlayerEntity player, ItemStack brush, CallbackInfo ci) {
-        if (    PandaArcheology.activeForBrushing &&
-                PandaArcheology.despawnedItemManager.itemLength() > 0 &&
-                player.getWorld().random.nextInt(PandaArcheology.brushChance) - player.getLuck() <= 0) {
+    private void generateItem(ServerWorld world, LivingEntity brusher, ItemStack brush, CallbackInfo ci) {
+        if (brusher instanceof ServerPlayerEntity) {
+            ServerPlayerEntity player = (ServerPlayerEntity) brusher;
 
-            DespawnedItemManager.itemData itemData = PandaArcheology.despawnedItemManager.getItem(player.getWorld().random);
-            String ownerName = itemData.owner;
+            if (PandaArcheology.activeForBrushing &&
+                    PandaArcheology.despawnedItemManager.itemLength() > 0 &&
+                    player.getWorld().random.nextInt(PandaArcheology.brushChance) - player.getLuck() <= 0) {
 
-            LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(itemData.time), ZoneId.systemDefault());
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-            String formattedDate = dateTime.format(formatter);
+                DespawnedItemManager.itemData itemData = PandaArcheology.despawnedItemManager.getItem(player.getWorld().random);
+                String ownerName = itemData.owner;
 
-            if (!ownerName.isBlank() && !ownerName.isEmpty()) {
-                player.sendMessage(Text.of("You found "+itemData.item.getName().getString()+" dropped by " + ownerName + " on "+formattedDate+"."),false);
-            } else {
-                player.sendMessage(Text.of("You found "+itemData.item.getName().getString()+" dropped on "+formattedDate+"."),false);
+                LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(itemData.time), ZoneId.systemDefault());
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+                String formattedDate = dateTime.format(formatter);
+
+                if (!ownerName.isBlank() && !ownerName.isEmpty()) {
+                    player.sendMessage(Text.of("You found " + itemData.item.getName().getString() + " dropped by " + ownerName + " on " + formattedDate + "."), false);
+                } else {
+                    player.sendMessage(Text.of("You found " + itemData.item.getName().getString() + " dropped on " + formattedDate + "."), false);
+                }
+
+                this.item = itemData.item;
             }
-
-            this.item = itemData.item;
         }
     }
 }
