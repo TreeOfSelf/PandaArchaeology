@@ -88,18 +88,17 @@ public class DespawnedItemManager {
             Optional<NbtList> nbtList = compound.getList("DespawnedItems");
             Optional<NbtList> nbtListOwners = compound.getList("DespawnedOwners");
             Optional<NbtList> nbtListTimes = compound.getList("DespawnedTimes");
-
-
+            
             for (int i = 0; i < nbtList.get().size(); i++) {
-                Optional<NbtCompound> itemCompound = nbtList.get().getCompound(i);
+                try {
+                    NbtCompound thisItem = nbtList.get().getCompound(i).get();
 
-                ItemStack.CODEC.decode(NbtOps.INSTANCE, itemCompound.get());
-
-                DataResult<Pair<ItemStack, NbtElement>> item = ItemStack.CODEC.decode(NbtOps.INSTANCE, itemCompound.get());
-                despawnedItems.add(item.getOrThrow().getFirst());
-                despawnedItemsOwners.add(nbtListOwners.get().get(i).asString().get());
-                despawnedItemsTimes.add(nbtListTimes.get().getLongArray(i).get()[0]);
-
+                    DataResult<Pair<ItemStack, NbtElement>> item = ItemStack.CODEC.decode(NbtOps.INSTANCE, thisItem);
+                    despawnedItems.add(item.getOrThrow().getFirst());
+                    despawnedItemsOwners.add(nbtListOwners.get().get(i).asString().get());
+                    despawnedItemsTimes.add(nbtListTimes.get().getLongArray(i).get()[0]);
+                } catch (Exception ignored) {
+                }
             }
 
         } catch (IOException e) {
