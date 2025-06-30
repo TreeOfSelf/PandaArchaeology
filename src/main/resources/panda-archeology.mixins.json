@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "me.sebastian420.PandaArcheology.mixin",
+  "package": "me.TreeOfSelf.PandaArcheology.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "BrushBlockMixin",

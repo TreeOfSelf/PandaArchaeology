@@ -1,5 +1,7 @@
-package me.sebastian420.PandaArcheology;
+package me.TreeOfSelf.PandaArcheology;
 
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.DataResult;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
 import net.minecraft.registry.DynamicRegistryManager;
@@ -57,9 +59,8 @@ public class DespawnedItemManager {
 
         for (int x = 0; x<despawnedItems.size(); x++) {
             try {
-                nbtList.add(despawnedItems.get(x).toNbt(registryManager));
+                nbtList.add(ItemStack.CODEC.encodeStart(NbtOps.INSTANCE, despawnedItems.get(x)).getOrThrow());
                 nbtListOwners.add(NbtString.of(despawnedItemsOwners.get(x)));
-
                 long[] tempArray = new long[1];
                 tempArray[0] = despawnedItemsTimes.get(x);
                 nbtListTimes.add(new NbtLongArray(tempArray));
@@ -91,8 +92,11 @@ public class DespawnedItemManager {
 
             for (int i = 0; i < nbtList.get().size(); i++) {
                 Optional<NbtCompound> itemCompound = nbtList.get().getCompound(i);
-                Optional<ItemStack> item = ItemStack.fromNbt(registryManager,itemCompound.get());
-                despawnedItems.add(item.get());
+
+                ItemStack.CODEC.decode(NbtOps.INSTANCE, itemCompound.get());
+
+                DataResult<Pair<ItemStack, NbtElement>> item = ItemStack.CODEC.decode(NbtOps.INSTANCE, itemCompound.get());
+                despawnedItems.add(item.getOrThrow().getFirst());
                 despawnedItemsOwners.add(nbtListOwners.get().get(i).asString().get());
                 despawnedItemsTimes.add(nbtListTimes.get().getLongArray(i).get()[0]);
 

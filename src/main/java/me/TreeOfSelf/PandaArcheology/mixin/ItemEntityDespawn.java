@@ -1,6 +1,6 @@
-package me.sebastian420.PandaArcheology.mixin;
+package me.TreeOfSelf.PandaArcheology.mixin;
 
-import me.sebastian420.PandaArcheology.PandaArcheology;
+import me.TreeOfSelf.PandaArcheology.PandaArcheology;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;

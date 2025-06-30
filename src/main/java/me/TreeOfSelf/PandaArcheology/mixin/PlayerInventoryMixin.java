@@ -1,4 +1,4 @@
-package me.sebastian420.PandaArcheology.mixin;
+package me.TreeOfSelf.PandaArcheology.mixin;
 
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;

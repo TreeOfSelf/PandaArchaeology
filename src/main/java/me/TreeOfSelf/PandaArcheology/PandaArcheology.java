@@ -1,4 +1,4 @@
-package me.sebastian420.PandaArcheology;
+package me.TreeOfSelf.PandaArcheology;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

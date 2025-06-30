@@ -1,10 +1,9 @@
-package me.sebastian420.PandaArcheology.mixin;
+package me.TreeOfSelf.PandaArcheology.mixin;
 
-import me.sebastian420.PandaArcheology.DespawnedItemManager;
-import me.sebastian420.PandaArcheology.PandaArcheology;
+import me.TreeOfSelf.PandaArcheology.DespawnedItemManager;
+import me.TreeOfSelf.PandaArcheology.PandaArcheology;
 import net.minecraft.block.entity.BrushableBlockEntity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
