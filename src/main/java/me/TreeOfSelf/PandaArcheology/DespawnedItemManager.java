@@ -59,7 +59,7 @@ public class DespawnedItemManager {
 
         for (int x = 0; x<despawnedItems.size(); x++) {
             try {
-                nbtList.add(ItemStack.CODEC.encodeStart(NbtOps.INSTANCE, despawnedItems.get(x)).getOrThrow());
+                nbtList.add(ItemStack.CODEC.encodeStart(this.registryManager.getOps(NbtOps.INSTANCE), despawnedItems.get(x)).getOrThrow());
                 nbtListOwners.add(NbtString.of(despawnedItemsOwners.get(x)));
                 long[] tempArray = new long[1];
                 tempArray[0] = despawnedItemsTimes.get(x);
@@ -88,17 +88,13 @@ public class DespawnedItemManager {
             Optional<NbtList> nbtList = compound.getList("DespawnedItems");
             Optional<NbtList> nbtListOwners = compound.getList("DespawnedOwners");
             Optional<NbtList> nbtListTimes = compound.getList("DespawnedTimes");
-            
-            for (int i = 0; i < nbtList.get().size(); i++) {
-                try {
-                    NbtCompound thisItem = nbtList.get().getCompound(i).get();
 
-                    DataResult<Pair<ItemStack, NbtElement>> item = ItemStack.CODEC.decode(NbtOps.INSTANCE, thisItem);
-                    despawnedItems.add(item.getOrThrow().getFirst());
-                    despawnedItemsOwners.add(nbtListOwners.get().get(i).asString().get());
-                    despawnedItemsTimes.add(nbtListTimes.get().getLongArray(i).get()[0]);
-                } catch (Exception ignored) {
-                }
+            for (int i = 0; i < nbtList.get().size(); i++) {
+                NbtCompound thisItem = nbtList.get().getCompound(i).get();
+                DataResult<Pair<ItemStack, NbtElement>> item = ItemStack.CODEC.decode(registryManager.getOps(NbtOps.INSTANCE), thisItem);
+                despawnedItems.add(item.getOrThrow().getFirst());
+                despawnedItemsOwners.add(nbtListOwners.get().get(i).asString().get());
+                despawnedItemsTimes.add(nbtListTimes.get().getLongArray(i).get()[0]);
             }
 
         } catch (IOException e) {
