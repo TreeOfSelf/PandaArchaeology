@@ -77,8 +77,8 @@ public class PandaArcheology implements ModInitializer {
 		activeForBrushing = true;
 		onlyPlayerOwned = false;
 		itemLimit = 10;
-		fishingChance = 60;
-		brushChance = 10;
+		fishingChance = 120;
+		brushChance = 15;
 
 		JsonObject json = new JsonObject();
 		json.addProperty("activeForFishing", activeForFishing);

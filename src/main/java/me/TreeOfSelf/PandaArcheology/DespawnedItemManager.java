@@ -1,10 +1,17 @@
 package me.TreeOfSelf.PandaArcheology;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
 import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
 import net.minecraft.util.math.random.Random;
 
 import java.io.IOException;
@@ -92,7 +99,53 @@ public class DespawnedItemManager {
             for (int i = 0; i < nbtList.get().size(); i++) {
                 NbtCompound thisItem = nbtList.get().getCompound(i).get();
                 DataResult<Pair<ItemStack, NbtElement>> item = ItemStack.CODEC.decode(registryManager.getOps(NbtOps.INSTANCE), thisItem);
-                despawnedItems.add(item.getOrThrow().getFirst());
+                ItemStack loadedStack = item.getOrThrow().getFirst();
+                
+                if (loadedStack.contains(DataComponentTypes.ITEM_NAME)) {
+                    Text itemName = loadedStack.get(DataComponentTypes.ITEM_NAME);
+                    if (itemName != null && itemName.getString().startsWith("{")) {
+                        try {
+                            JsonElement jsonElement = JsonParser.parseString(itemName.getString());
+                            DataResult<Pair<Text, JsonElement>> result = TextCodecs.CODEC.decode(registryManager.getOps(JsonOps.INSTANCE), jsonElement);
+                            loadedStack.set(DataComponentTypes.ITEM_NAME, result.getOrThrow().getFirst());
+                        } catch (Exception ignored) {
+                        }
+                    }
+                }
+                
+                if (loadedStack.contains(DataComponentTypes.CUSTOM_NAME)) {
+                    Text customName = loadedStack.get(DataComponentTypes.CUSTOM_NAME);
+                    if (customName != null && customName.getString().startsWith("{")) {
+                        try {
+                            JsonElement jsonElement = JsonParser.parseString(customName.getString());
+                            DataResult<Pair<Text, JsonElement>> result = TextCodecs.CODEC.decode(registryManager.getOps(JsonOps.INSTANCE), jsonElement);
+                            loadedStack.set(DataComponentTypes.CUSTOM_NAME, result.getOrThrow().getFirst());
+                        } catch (Exception ignored) {
+                        }
+                    }
+                }
+                
+                if (loadedStack.contains(DataComponentTypes.LORE)) {
+                    LoreComponent lore = loadedStack.get(DataComponentTypes.LORE);
+                    if (lore != null && !lore.lines().isEmpty()) {
+                        List<Text> newLoreLines = new ArrayList<>();
+                        for (Text line : lore.lines()) {
+                            Text newLine = line;
+                            if (line.getString().startsWith("{")) {
+                                try {
+                                    JsonElement jsonElement = JsonParser.parseString(line.getString());
+                                    DataResult<Pair<Text, JsonElement>> result = TextCodecs.CODEC.decode(registryManager.getOps(JsonOps.INSTANCE), jsonElement);
+                                    newLine = result.getOrThrow().getFirst();
+                                } catch (Exception ignored) {
+                                }
+                            }
+                            newLoreLines.add(newLine);
+                        }
+                        loadedStack.set(DataComponentTypes.LORE, new LoreComponent(newLoreLines));
+                    }
+                }
+                
+                despawnedItems.add(loadedStack);
                 despawnedItemsOwners.add(nbtListOwners.get().get(i).asString().get());
                 despawnedItemsTimes.add(nbtListTimes.get().getLongArray(i).get()[0]);
             }
