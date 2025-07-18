@@ -21,6 +21,9 @@ config/PandaArchaeology.json generated at runtime
 }
 ```
 
+## Try it out
+`hardcoreanarchy.gay`   (Deathban Anarchy)  
+`sky.hardcoreanarchy.gay`   (Skyblock Anarchy)
 
 ## Support
 
