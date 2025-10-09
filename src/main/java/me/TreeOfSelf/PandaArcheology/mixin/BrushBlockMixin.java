@@ -31,9 +31,9 @@ public class BrushBlockMixin {
 
             if (PandaArcheology.activeForBrushing &&
                     PandaArcheology.despawnedItemManager.itemLength() > 0 &&
-                    player.getWorld().random.nextInt(PandaArcheology.brushChance) - player.getLuck() <= 0) {
+                    player.getEntityWorld().random.nextInt(PandaArcheology.brushChance) - player.getLuck() <= 0) {
 
-                DespawnedItemManager.itemData itemData = PandaArcheology.despawnedItemManager.getItem(player.getWorld().random);
+                DespawnedItemManager.itemData itemData = PandaArcheology.despawnedItemManager.getItem(player.getEntityWorld().random);
                 String ownerName = itemData.owner;
 
                 LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(itemData.time), ZoneId.systemDefault());

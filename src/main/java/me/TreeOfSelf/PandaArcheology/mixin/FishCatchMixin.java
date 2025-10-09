@@ -35,11 +35,11 @@ public abstract class FishCatchMixin {
         if (!PandaArcheology.activeForFishing) return value;
 
         if (PandaArcheology.despawnedItemManager.itemLength() <= 0 ||
-                this.getPlayerOwner().getWorld().random.nextInt(PandaArcheology.fishingChance) - (this.luckBonus + getPlayerOwner().getLuck()) * 3  > 0 ||
+                this.getPlayerOwner().getEntityWorld().random.nextInt(PandaArcheology.fishingChance) - (this.luckBonus + getPlayerOwner().getLuck()) * 3  > 0 ||
                 !this.inOpenWater)  {
             return value;
         } else {
-            DespawnedItemManager.itemData itemData = PandaArcheology.despawnedItemManager.getItem(this.getPlayerOwner().getWorld().random);
+            DespawnedItemManager.itemData itemData = PandaArcheology.despawnedItemManager.getItem(this.getPlayerOwner().getEntityWorld().random);
             String ownerName = itemData.owner;
 
             LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(itemData.time), ZoneId.systemDefault());
