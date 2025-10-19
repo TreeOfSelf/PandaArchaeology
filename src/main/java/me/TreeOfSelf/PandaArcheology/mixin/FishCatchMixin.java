@@ -35,7 +35,7 @@ public abstract class FishCatchMixin {
         if (!PandaArcheology.activeForFishing) return value;
 
         if (PandaArcheology.despawnedItemManager.itemLength() <= 0 ||
-                this.getPlayerOwner().getEntityWorld().random.nextInt(PandaArcheology.fishingChance) - (this.luckBonus + getPlayerOwner().getLuck()) * 3  > 0 ||
+                this.getPlayerOwner().getEntityWorld().random.nextInt(PandaArcheology.fishingChance) - (this.luckBonus + getPlayerOwner().getLuck()) * PandaArcheology.luckMultiplier  > 0 ||
                 !this.inOpenWater)  {
             return value;
         } else {
