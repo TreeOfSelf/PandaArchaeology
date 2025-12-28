@@ -97,57 +97,61 @@ public class DespawnedItemManager {
             Optional<NbtList> nbtListTimes = compound.getList("DespawnedTimes");
 
             for (int i = 0; i < nbtList.get().size(); i++) {
-                NbtCompound thisItem = nbtList.get().getCompound(i).get();
-                DataResult<Pair<ItemStack, NbtElement>> item = ItemStack.CODEC.decode(registryManager.getOps(NbtOps.INSTANCE), thisItem);
-                ItemStack loadedStack = item.getOrThrow().getFirst();
-                
-                if (loadedStack.contains(DataComponentTypes.ITEM_NAME)) {
-                    Text itemName = loadedStack.get(DataComponentTypes.ITEM_NAME);
-                    if (itemName != null && itemName.getString().startsWith("{")) {
-                        try {
-                            JsonElement jsonElement = JsonParser.parseString(itemName.getString());
-                            DataResult<Pair<Text, JsonElement>> result = TextCodecs.CODEC.decode(registryManager.getOps(JsonOps.INSTANCE), jsonElement);
-                            loadedStack.set(DataComponentTypes.ITEM_NAME, result.getOrThrow().getFirst());
-                        } catch (Exception ignored) {
-                        }
-                    }
-                }
-                
-                if (loadedStack.contains(DataComponentTypes.CUSTOM_NAME)) {
-                    Text customName = loadedStack.get(DataComponentTypes.CUSTOM_NAME);
-                    if (customName != null && customName.getString().startsWith("{")) {
-                        try {
-                            JsonElement jsonElement = JsonParser.parseString(customName.getString());
-                            DataResult<Pair<Text, JsonElement>> result = TextCodecs.CODEC.decode(registryManager.getOps(JsonOps.INSTANCE), jsonElement);
-                            loadedStack.set(DataComponentTypes.CUSTOM_NAME, result.getOrThrow().getFirst());
-                        } catch (Exception ignored) {
-                        }
-                    }
-                }
-                
-                if (loadedStack.contains(DataComponentTypes.LORE)) {
-                    LoreComponent lore = loadedStack.get(DataComponentTypes.LORE);
-                    if (lore != null && !lore.lines().isEmpty()) {
-                        List<Text> newLoreLines = new ArrayList<>();
-                        for (Text line : lore.lines()) {
-                            Text newLine = line;
-                            if (line.getString().startsWith("{")) {
-                                try {
-                                    JsonElement jsonElement = JsonParser.parseString(line.getString());
-                                    DataResult<Pair<Text, JsonElement>> result = TextCodecs.CODEC.decode(registryManager.getOps(JsonOps.INSTANCE), jsonElement);
-                                    newLine = result.getOrThrow().getFirst();
-                                } catch (Exception ignored) {
-                                }
+                try {
+                    NbtCompound thisItem = nbtList.get().getCompound(i).get();
+                    DataResult<Pair<ItemStack, NbtElement>> item = ItemStack.CODEC.decode(registryManager.getOps(NbtOps.INSTANCE), thisItem);
+                    ItemStack loadedStack = item.getOrThrow().getFirst();
+
+                    if (loadedStack.contains(DataComponentTypes.ITEM_NAME)) {
+                        Text itemName = loadedStack.get(DataComponentTypes.ITEM_NAME);
+                        if (itemName != null && itemName.getString().startsWith("{")) {
+                            try {
+                                JsonElement jsonElement = JsonParser.parseString(itemName.getString());
+                                DataResult<Pair<Text, JsonElement>> result = TextCodecs.CODEC.decode(registryManager.getOps(JsonOps.INSTANCE), jsonElement);
+                                loadedStack.set(DataComponentTypes.ITEM_NAME, result.getOrThrow().getFirst());
+                            } catch (Exception ignored) {
                             }
-                            newLoreLines.add(newLine);
                         }
-                        loadedStack.set(DataComponentTypes.LORE, new LoreComponent(newLoreLines));
                     }
+
+                    if (loadedStack.contains(DataComponentTypes.CUSTOM_NAME)) {
+                        Text customName = loadedStack.get(DataComponentTypes.CUSTOM_NAME);
+                        if (customName != null && customName.getString().startsWith("{")) {
+                            try {
+                                JsonElement jsonElement = JsonParser.parseString(customName.getString());
+                                DataResult<Pair<Text, JsonElement>> result = TextCodecs.CODEC.decode(registryManager.getOps(JsonOps.INSTANCE), jsonElement);
+                                loadedStack.set(DataComponentTypes.CUSTOM_NAME, result.getOrThrow().getFirst());
+                            } catch (Exception ignored) {
+                            }
+                        }
+                    }
+
+                    if (loadedStack.contains(DataComponentTypes.LORE)) {
+                        LoreComponent lore = loadedStack.get(DataComponentTypes.LORE);
+                        if (lore != null && !lore.lines().isEmpty()) {
+                            List<Text> newLoreLines = new ArrayList<>();
+                            for (Text line : lore.lines()) {
+                                Text newLine = line;
+                                if (line.getString().startsWith("{")) {
+                                    try {
+                                        JsonElement jsonElement = JsonParser.parseString(line.getString());
+                                        DataResult<Pair<Text, JsonElement>> result = TextCodecs.CODEC.decode(registryManager.getOps(JsonOps.INSTANCE), jsonElement);
+                                        newLine = result.getOrThrow().getFirst();
+                                    } catch (Exception ignored) {
+                                    }
+                                }
+                                newLoreLines.add(newLine);
+                            }
+                            loadedStack.set(DataComponentTypes.LORE, new LoreComponent(newLoreLines));
+                        }
+                    }
+
+                    despawnedItems.add(loadedStack);
+                    despawnedItemsOwners.add(nbtListOwners.get().get(i).asString().get());
+                    despawnedItemsTimes.add(nbtListTimes.get().getLongArray(i).get()[0]);
+                } catch (Exception e) {
+                    PandaArcheology.LOGGER.info("Skipping despawned item at index {} due to error: {}", i, e.getMessage());
                 }
-                
-                despawnedItems.add(loadedStack);
-                despawnedItemsOwners.add(nbtListOwners.get().get(i).asString().get());
-                despawnedItemsTimes.add(nbtListTimes.get().getLongArray(i).get()[0]);
             }
 
         } catch (IOException e) {
