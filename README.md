@@ -33,16 +33,3 @@ config/PandaArchaeology.json generated at runtime
 ## License
 
 [CC0](https://creativecommons.org/public-domain/cc0/)
-
-
-## Try it out
-`hardcoreanarchy.gay`   (Deathban Anarchy)  
-`sky.hardcoreanarchy.gay`   (Skyblock Anarchy)
-
-## Support
-
-[Support discord here!]( https://discord.gg/3tP3Tqu983)
-
-## License
-
-[CC0](https://creativecommons.org/public-domain/cc0/)
