@@ -15,9 +15,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class ItemEntityDespawn {
 	@Shadow public abstract ItemStack getStack();
 	@Shadow @Nullable public abstract Entity getOwner();
+	@Shadow private int pickupDelay;
 
 	@Inject(at = @At(value = "INVOKE",target = "Lnet/minecraft/entity/ItemEntity;discard()V", ordinal = 1), method = "tick")
 	private void despawned(CallbackInfo info) {
+		if (this.pickupDelay == Short.MAX_VALUE) {
+			return;
+		}
 		if (this.getOwner() != null || !PandaArcheology.onlyPlayerOwned) {
 			String nameString = "";
 			if (this.getOwner() != null) nameString = this.getOwner().getName().getString();
