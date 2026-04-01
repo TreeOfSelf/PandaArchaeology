@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version "${loom_version}"
+	id 'net.fabricmc.fabric-loom' version '1.16.0-alpha.16'
 	id 'maven-publish'
 }
 
@@ -21,11 +21,10 @@ repositories {
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	
 }
 
@@ -37,23 +36,38 @@ processResources {
 	}
 }
 
-tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
-}
-
 java {
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
 	withSourcesJar()
-
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(25)
+	}
 }
 
 jar {
 	from("LICENSE") {
 		rename { "${it}_${project.base.archivesName.get()}"}
+	}
+}
+
+tasks.register("writeFabricServerJavaLauncher") {
+	group = "fabric"
+	description = "Writes server/start-with-gradle-jdk.sh using the same JDK as compileJava (Java 25 toolchain)."
+	dependsOn compileJava
+	outputs.file(layout.projectDirectory.file("server/start-with-gradle-jdk.sh"))
+	doLast {
+		def jc = tasks.named("compileJava").get() as JavaCompile
+		def compiler = jc.javaCompiler.get()
+		def javaHome = compiler.metadata.installationPath.asFile.absoluteFile
+		def unixJava = new File(javaHome, "bin/java")
+		def exe = unixJava.absolutePath.replace("'", "'\\''")
+		def out = layout.projectDirectory.file("server/start-with-gradle-jdk.sh").asFile
+		out.text = "#!/usr/bin/env bash\nset -euo pipefail\nexec '${exe}' \"\$@\"\n"
+		out.setExecutable(true, false)
+		def winJava = new File(javaHome, "bin/java.exe")
+		if (winJava.exists()) {
+			def winPath = winJava.absolutePath.replace('"', '""')
+			layout.projectDirectory.file("server/start-with-gradle-jdk.bat").asFile.text = "@echo off\r\n\"${winPath}\" %*\r\n"
+		}
 	}
 }
 

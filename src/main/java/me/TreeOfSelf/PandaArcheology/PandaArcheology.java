@@ -4,10 +4,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import net.fabricmc.api.ModInitializer;
-
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.WorldSavePath;
+import net.minecraft.world.level.storage.LevelResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,8 +48,8 @@ public class PandaArcheology implements ModInitializer {
 	}
 
 	private void onServerStart(MinecraftServer server) {
-		Path worldSavePath = server.getSavePath(WorldSavePath.ROOT);
-		despawnedItemManager = new DespawnedItemManager(worldSavePath, server.getRegistryManager());
+		Path worldSavePath = server.getWorldPath(LevelResource.ROOT);
+		despawnedItemManager = new DespawnedItemManager(worldSavePath, server.registryAccess());
 	}
 
 	private void loadOrCreateConfig() {
@@ -60,7 +59,6 @@ public class PandaArcheology implements ModInitializer {
 			try (FileReader reader = new FileReader(CONFIG_FILE)) {
 				JsonObject json = GSON.fromJson(reader, JsonObject.class);
 
-				// Load values with defaults if missing
 				if (json.has("activeForFishing")) {
 					activeForFishing = json.get("activeForFishing").getAsBoolean();
 				} else {
@@ -156,6 +154,4 @@ public class PandaArcheology implements ModInitializer {
 		saveConfig();
 		LOGGER.info("Created default configuration file.");
 	}
-
-
 }
