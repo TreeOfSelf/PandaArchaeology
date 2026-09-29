@@ -21,10 +21,10 @@ public abstract class PlayerInventoryMixin {
 			method = "dropAll",
 			at = @At(
 					value = "INVOKE",
-					target = "Lnet/minecraft/world/entity/player/Player;drop(Lnet/minecraft/world/item/ItemStack;ZZ)Lnet/minecraft/world/entity/item/ItemEntity;"
+					target = "Lnet/minecraft/world/entity/player/Player;createItemStackToDrop(Lnet/minecraft/world/item/ItemStack;ZZ)Lnet/minecraft/world/entity/item/ItemEntity;"
 			)
 	)
 	private ItemEntity redirectDropItem(Player playerEntity, ItemStack stack, boolean randomly, boolean thrownFromHand) {
-		return playerEntity.drop(stack, true, true);
+		return playerEntity.createItemStackToDrop(stack, true, true);
 	}
 }
