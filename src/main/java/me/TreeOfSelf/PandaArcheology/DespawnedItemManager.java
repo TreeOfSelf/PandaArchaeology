@@ -78,7 +78,7 @@ public class DespawnedItemManager {
     }
 
     public void save() {
-        CompoundTag compound = encode();
+        CompoundTag compound = encode(despawnedItems, despawnedItemsOwners, despawnedItemsTimes);
         try {
             WRITER.submit(() -> write(compound)).get();
         } catch (Exception e) {
@@ -86,24 +86,30 @@ public class DespawnedItemManager {
         }
     }
 
+    // Copies the pool here and encodes on WRITER: encoding thousands of items on every find lagged the server thread.
+    // Stack copies are cheap, and a later find can hand one of these stacks to a player while WRITER still encodes.
     private void saveAsync() {
-        CompoundTag compound = encode();
-        WRITER.execute(() -> write(compound));
+        List<ItemStack> items = new ArrayList<>(despawnedItems.size());
+        for (ItemStack stack : despawnedItems) items.add(stack.copy());
+        List<String> owners = new ArrayList<>(despawnedItemsOwners);
+        List<Long> times = new ArrayList<>(despawnedItemsTimes);
+        WRITER.execute(() -> write(encode(items, owners, times)));
     }
 
-    private CompoundTag encode() {
+    private CompoundTag encode(List<ItemStack> items, List<String> owners, List<Long> times) {
         CompoundTag compound = new CompoundTag();
         ListTag nbtList = new ListTag();
         ListTag nbtListOwners = new ListTag();
         ListTag nbtListTimes = new ListTag();
+        var ops = registries.createSerializationContext(NbtOps.INSTANCE);
 
-        for (int x = 0; x < despawnedItems.size(); x++) {
+        for (int x = 0; x < items.size(); x++) {
             try {
-                Tag encoded = ItemStack.CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), despawnedItems.get(x)).getOrThrow();
+                Tag encoded = ItemStack.CODEC.encodeStart(ops, items.get(x)).getOrThrow();
                 nbtList.add(encoded);
-                nbtListOwners.add(StringTag.valueOf(despawnedItemsOwners.get(x)));
+                nbtListOwners.add(StringTag.valueOf(owners.get(x)));
                 long[] tempArray = new long[1];
-                tempArray[0] = despawnedItemsTimes.get(x);
+                tempArray[0] = times.get(x);
                 nbtListTimes.add(new LongArrayTag(tempArray));
             } catch (Exception ignored) {
             }
