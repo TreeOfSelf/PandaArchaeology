@@ -88,14 +88,14 @@ public class PandaArcheology implements ModInitializer {
 				}
 
 				if (json.has("fishingChance")) {
-					fishingChance = json.get("fishingChance").getAsInt();
+					fishingChance = Math.max(1, json.get("fishingChance").getAsInt());
 				} else {
 					fishingChance = 100;
 					needsUpdate = true;
 				}
 
 				if (json.has("brushChance")) {
-					brushChance = json.get("brushChance").getAsInt();
+					brushChance = Math.max(1, json.get("brushChance").getAsInt());
 				} else {
 					brushChance = 10;
 					needsUpdate = true;
