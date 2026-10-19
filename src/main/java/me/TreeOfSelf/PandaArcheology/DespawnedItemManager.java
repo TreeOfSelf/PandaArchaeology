@@ -22,7 +22,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemLore;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +35,12 @@ public class DespawnedItemManager {
     private final List<ItemStack> despawnedItems = new ArrayList<>();
     private final List<String> despawnedItemsOwners = new ArrayList<>();
     private final List<Long> despawnedItemsTimes = new ArrayList<>();
+
+    private static final ExecutorService WRITER = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "PandaArchaeology save");
+        t.setDaemon(true);
+        return t;
+    });
 
     private final Path dataFile;
     private final HolderLookup.Provider registries;
@@ -56,7 +66,11 @@ public class DespawnedItemManager {
 
     public itemData getItem(RandomSource random) {
         int index = random.nextInt(despawnedItems.size());
-        return new itemData(despawnedItems.remove(index), despawnedItemsOwners.remove(index), despawnedItemsTimes.remove(index));
+        itemData data = new itemData(despawnedItems.remove(index), despawnedItemsOwners.remove(index), despawnedItemsTimes.remove(index));
+        // Save now: the found item can be stored in a chunk that saves before the next autosave,
+        // and a crash would then leave it in both places
+        saveAsync();
+        return data;
     }
 
     public int itemLength() {
@@ -64,6 +78,20 @@ public class DespawnedItemManager {
     }
 
     public void save() {
+        CompoundTag compound = encode();
+        try {
+            WRITER.submit(() -> write(compound)).get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void saveAsync() {
+        CompoundTag compound = encode();
+        WRITER.execute(() -> write(compound));
+    }
+
+    private CompoundTag encode() {
         CompoundTag compound = new CompoundTag();
         ListTag nbtList = new ListTag();
         ListTag nbtListOwners = new ListTag();
@@ -84,9 +112,15 @@ public class DespawnedItemManager {
         compound.put("DespawnedItems", nbtList);
         compound.put("DespawnedOwners", nbtListOwners);
         compound.put("DespawnedTimes", nbtListTimes);
+        return compound;
+    }
 
+    // Only ever runs on WRITER, so an older snapshot never lands after a newer one
+    private void write(CompoundTag compound) {
         try {
-            NbtIo.writeCompressed(compound, dataFile);
+            Path tmp = dataFile.resolveSibling(dataFile.getFileName() + ".tmp");
+            NbtIo.writeCompressed(compound, tmp);
+            Files.move(tmp, dataFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -121,30 +155,7 @@ public class DespawnedItemManager {
                     DataResult<Pair<ItemStack, Tag>> item = ItemStack.CODEC.decode(registries.createSerializationContext(NbtOps.INSTANCE), thisItem);
                     ItemStack loadedStack = item.getOrThrow().getFirst();
 
-                    if (loadedStack.has(DataComponents.ITEM_NAME)) {
-                        Component itemName = loadedStack.get(DataComponents.ITEM_NAME);
-                        if (itemName != null && itemName.getString().startsWith("{")) {
-                            try {
-                                JsonElement jsonElement = JsonParser.parseString(itemName.getString());
-                                DataResult<Pair<Component, JsonElement>> result = ComponentSerialization.CODEC.decode(registries.createSerializationContext(JsonOps.INSTANCE), jsonElement);
-                                loadedStack.set(DataComponents.ITEM_NAME, result.getOrThrow().getFirst());
-                            } catch (Exception ignored) {
-                            }
-                        }
-                    }
-
-                    if (loadedStack.has(DataComponents.CUSTOM_NAME)) {
-                        Component customName = loadedStack.get(DataComponents.CUSTOM_NAME);
-                        if (customName != null && customName.getString().startsWith("{")) {
-                            try {
-                                JsonElement jsonElement = JsonParser.parseString(customName.getString());
-                                DataResult<Pair<Component, JsonElement>> result = ComponentSerialization.CODEC.decode(registries.createSerializationContext(JsonOps.INSTANCE), jsonElement);
-                                loadedStack.set(DataComponents.CUSTOM_NAME, result.getOrThrow().getFirst());
-                            } catch (Exception ignored) {
-                            }
-                        }
-                    }
-
+                    // Names are never decoded from JSON: an anvil name like {"text":..} would get its formatting back
                     if (loadedStack.has(DataComponents.LORE)) {
                         ItemLore lore = loadedStack.get(DataComponents.LORE);
                         if (lore != null && !lore.lines().isEmpty()) {
