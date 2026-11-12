@@ -16,6 +16,17 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.context.CommandContext;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import java.util.List;
+
+
 public class PandaArcheology implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("pandaarcheology");
 	public static DespawnedItemManager despawnedItemManager;
@@ -29,6 +40,7 @@ public class PandaArcheology implements ModInitializer {
 	public static int fishingChance;
 	public static int brushChance;
 	public static int luckMultiplier;
+	public static boolean globalBroadcast;
 
 	@Override
 	public void onInitialize() {
@@ -36,6 +48,14 @@ public class PandaArcheology implements ModInitializer {
 		ServerLifecycleEvents.SERVER_STOPPING.register(this::onServerStop);
 		ServerLifecycleEvents.AFTER_SAVE.register(this::onServerSave);
 		loadOrCreateConfig();
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
+				dispatcher.register(
+						Commands.literal("lostloot")
+								.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+								.then(Commands.literal("list")
+										.executes(PandaArcheology::listPool))
+				)
+		);
 		LOGGER.info("PandaArcheology Started!");
 	}
 
@@ -107,6 +127,12 @@ public class PandaArcheology implements ModInitializer {
 					luckMultiplier = 3;
 					needsUpdate = true;
 				}
+				if (json.has("global_broadcast")) {
+					globalBroadcast = json.get("global_broadcast").getAsBoolean();
+				} else {
+					globalBroadcast = false;
+					needsUpdate = true;
+				}
 
 				if (needsUpdate) {
 					saveConfig();
@@ -132,6 +158,7 @@ public class PandaArcheology implements ModInitializer {
 		json.addProperty("fishingChance", fishingChance);
 		json.addProperty("brushChance", brushChance);
 		json.addProperty("luckMultiplier", luckMultiplier);
+		json.addProperty("global_broadcast", globalBroadcast);
 
 		CONFIG_FILE.getParentFile().mkdirs();
 
@@ -150,8 +177,45 @@ public class PandaArcheology implements ModInitializer {
 		fishingChance = 100;
 		brushChance = 10;
 		luckMultiplier = 3;
+		globalBroadcast = false;
 
 		saveConfig();
 		LOGGER.info("Created default configuration file.");
+	}
+
+	private static final int LIST_PER_LINE = 4;
+
+	private static int listPool(CommandContext<CommandSourceStack> ctx) {
+		CommandSourceStack source = ctx.getSource();
+		if (despawnedItemManager == null) {
+			source.sendFailure(Component.literal("Pool not loaded yet."));
+			return 0;
+		}
+		List<DespawnedItemManager.itemData> pool = despawnedItemManager.snapshot();
+		if (pool.isEmpty()) {
+			source.sendSuccess(() -> Component.literal("Lost loot pool is empty.").withStyle(ChatFormatting.GRAY), false);
+			return Command.SINGLE_SUCCESS;
+		}
+
+		source.sendSuccess(() -> Component.literal("Lost loot pool (" + pool.size() + "):")
+				.withStyle(ChatFormatting.GOLD), false);
+
+		MutableComponent line = Component.literal("");
+		int onLine = 0;
+		for (int i = 0; i < pool.size(); i++) {
+			DespawnedItemManager.itemData data = pool.get(i);
+			if (onLine > 0) {
+				line.append(Component.literal(" · ").withStyle(ChatFormatting.DARK_GRAY));
+			}
+			line.append(FindMessages.listEntry(data.item, data.owner, data.time));
+			onLine++;
+			if (onLine >= LIST_PER_LINE || i == pool.size() - 1) {
+				MutableComponent toSend = line;
+				source.sendSuccess(() -> toSend, false);
+				line = Component.literal("");
+				onLine = 0;
+			}
+		}
+		return Command.SINGLE_SUCCESS;
 	}
 }
