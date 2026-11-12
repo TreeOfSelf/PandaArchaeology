@@ -1,8 +1,7 @@
 package me.TreeOfSelf.PandaArcheology.mixin;
-
+import me.TreeOfSelf.PandaArcheology.FindMessages;
 import me.TreeOfSelf.PandaArcheology.DespawnedItemManager;
 import me.TreeOfSelf.PandaArcheology.PandaArcheology;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.ItemStack;
@@ -14,10 +13,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
+
 @Mixin(FishingHook.class)
 public abstract class FishCatchMixin {
 	@Shadow
@@ -52,16 +48,7 @@ public abstract class FishCatchMixin {
 			return items;
 		}
 		DespawnedItemManager.itemData itemData = PandaArcheology.despawnedItemManager.getItem(owner.level().getRandom());
-		String ownerName = itemData.owner;
-		LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(itemData.time), ZoneId.systemDefault());
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-		String formattedDate = dateTime.format(formatter);
-		String itemLabel = itemData.item.getHoverName().getString();
-		if (!ownerName.isBlank() && !ownerName.isEmpty()) {
-			owner.sendSystemMessage(Component.literal("You found " + itemLabel + " dropped by " + ownerName + " on " + formattedDate + "."));
-		} else {
-			owner.sendSystemMessage(Component.literal("You found " + itemLabel + " dropped on " + formattedDate + "."));
-		}
+		FindMessages.announce(owner, itemData);
 		items.set(0, itemData.item);
 		return items;
 	}

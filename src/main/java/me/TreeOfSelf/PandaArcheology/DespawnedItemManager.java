@@ -77,6 +77,15 @@ public class DespawnedItemManager {
         return despawnedItems.size();
     }
 
+    /** Snapshot of the pool for /lostloot list */
+    public java.util.List<itemData> snapshot() {
+        java.util.List<itemData> out = new ArrayList<>(despawnedItems.size());
+        for (int i = 0; i < despawnedItems.size(); i++) {
+            out.add(new itemData(despawnedItems.get(i), despawnedItemsOwners.get(i), despawnedItemsTimes.get(i)));
+        }
+        return out;
+    }
+
     public void save() {
         CompoundTag compound = encode(despawnedItems, despawnedItemsOwners, despawnedItemsTimes);
         try {
