@@ -20,18 +20,26 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemLore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+
 public class DespawnedItemManager {
+    public static final Logger LOGGER = LoggerFactory.getLogger("pandaarcheology");
     private final List<ItemStack> despawnedItems = new ArrayList<>();
     private final List<String> despawnedItemsOwners = new ArrayList<>();
     private final List<Long> despawnedItemsTimes = new ArrayList<>();
@@ -51,17 +59,92 @@ public class DespawnedItemManager {
         load();
     }
 
-    public void addItem(ItemStack item, String string) {
-        int occurences = 0;
-        for (ItemStack despawnedItem : despawnedItems) {
-            if (despawnedItem.getItem() == item.getItem()) occurences++;
+    public void addItem(ItemStack item, String nameString) {
+
+        if (item == null || item.isEmpty()) {
+            return;
+        }
+        if (!ItemFilter.allows(item)) {
+            return;
         }
 
-        if (occurences < PandaArcheology.itemLimit || PandaArcheology.itemLimit == 0) {
-            despawnedItems.add(item);
-            despawnedItemsOwners.add(string);
-            despawnedItemsTimes.add(System.currentTimeMillis());
+        int firstOccurrenceIndex = -1;
+        int occurrences = 0;
+        boolean replaced = false;
+
+        for (int i = 0; i < despawnedItems.size(); i++) {
+            if (despawnedItems.get(i).getItem() == item.getItem()) {
+                if (firstOccurrenceIndex == -1) {
+                    firstOccurrenceIndex = i;
+                }
+                occurrences++;
+            }
         }
+
+        if (PandaArcheology.itemLimit > 0 && occurrences >= PandaArcheology.itemLimit) {
+            if (firstOccurrenceIndex != -1) {
+                LOGGER.info("Item limit reached for {}. Replacing the oldest instance.", item.getItem().toString());
+                despawnedItems.remove(firstOccurrenceIndex);
+                despawnedItemsOwners.remove(firstOccurrenceIndex);
+                despawnedItemsTimes.remove(firstOccurrenceIndex);
+                replaced = true;
+            }
+        }
+
+        if (!replaced) {
+            if (itemLength() >= PandaArcheology.globalItemLimit && PandaArcheology.globalItemLimit > 0) {
+                LOGGER.info("Met global item limit ({}). Removing oldest item to make room.", PandaArcheology.globalItemLimit);
+                despawnedItems.removeFirst();
+                despawnedItemsOwners.removeFirst();
+                despawnedItemsTimes.removeFirst();
+            }
+        }
+
+        despawnedItems.add(item);
+        despawnedItemsOwners.add(nameString);
+        despawnedItemsTimes.add(System.currentTimeMillis());
+    }
+
+    /**
+     * Deletes an item at a specified index.
+     * @param index id of the item to remove.
+     * @return true if suppression succeeds; false otherwise.
+     */
+
+    public boolean removeAt(int index) {
+        if (index < 0 || index>=despawnedItems.size()) {
+            return false;
+        }
+        despawnedItems.remove(index);
+        despawnedItemsOwners.remove(index);
+        despawnedItemsTimes.remove(index);
+
+        saveAsync();
+        return true;
+    }
+
+    /**
+     * Empties the pool
+     * @return count of removed items.
+     */
+    public int clear() {
+        if (despawnedItems.isEmpty()) {
+            return 0;
+        }
+
+        int count = despawnedItems.size();
+
+        despawnedItems.clear();
+        despawnedItemsOwners.clear();
+        despawnedItemsTimes.clear();
+
+        saveAsync();
+        return count;
+    }
+
+    public synchronized itemData getAt(int index) {
+        if (index < 0 || index >= despawnedItems.size()) return null;
+        return new itemData(despawnedItems.get(index), despawnedItemsOwners.get(index), despawnedItemsTimes.get(index));
     }
 
     public itemData getItem(RandomSource random) {
@@ -213,11 +296,17 @@ public class DespawnedItemManager {
         public ItemStack item;
         public String owner;
         public long time;
+        public String dateFormated;
+        public Component itemHoverName;
 
         itemData(ItemStack item, String owner, long time) {
             this.item = item;
             this.owner = owner;
             this.time = time;
+            LocalDateTime dateTime = LocalDateTime.ofInstant(
+                    Instant.ofEpochMilli(time), ZoneId.systemDefault());
+            this.dateFormated = dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            this.itemHoverName = FindMessages.itemHoverName(this.item);
         }
     }
 }

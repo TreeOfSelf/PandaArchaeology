@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter;
 
 public final class FindMessages {
 
-    private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+    private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     private FindMessages() {}
 
@@ -27,24 +27,22 @@ public final class FindMessages {
     }
 
     public static Component buildFindMessage(Player finder, DespawnedItemManager.itemData data) {
-        LocalDateTime dateTime = LocalDateTime.ofInstant(
-                Instant.ofEpochMilli(data.time), ZoneId.systemDefault());
-        String formattedDate = dateTime.format(DATE);
-        Component itemName = itemHoverName(data.item);
-
-        MutableComponent msg = Component.literal("");
+        MutableComponent msg = Component.literal("").withStyle(ChatFormatting.GRAY);
         if (PandaArcheology.globalBroadcast) {
             msg.append(finder.getName().copy().withStyle(ChatFormatting.YELLOW));
-            msg.append(Component.literal(" found ").withStyle(ChatFormatting.GRAY));
+            msg.append(Component.literal(" found "));
         } else {
-            msg.append(Component.literal("You found ").withStyle(ChatFormatting.GRAY));
+            msg.append(Component.literal("You found "));
         }
-        msg.append(itemName);
+        msg.append(data.itemHoverName);
+        msg.append(Component.literal(" dropped"));
         if (data.owner != null && !data.owner.isBlank()) {
-            msg.append(Component.literal(" dropped by ").withStyle(ChatFormatting.GRAY));
+            msg.append(Component.literal(" by "));
             msg.append(Component.literal(data.owner).withStyle(ChatFormatting.YELLOW));
         }
-        msg.append(Component.literal(" on " + formattedDate + ".").withStyle(ChatFormatting.GRAY));
+        msg.append(Component.literal(" on "));
+        msg.append(Component.literal(data.dateFormated).withStyle(ChatFormatting.LIGHT_PURPLE));
+        msg.append(Component.literal("."));
         return msg;
     }
 
